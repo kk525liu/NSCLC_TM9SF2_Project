@@ -1,6 +1,5 @@
 
 
-file.edit("~/.Rprofile")
 
 rm(list = ls ())
 gc()
@@ -13,31 +12,7 @@ library(qs)
 library(DelayedMatrixStats)
 
 
-load( "/home/kk/Lung_cancer_Data/scRNA-seq/RDS/Li lab/All/Neutrophil_harmony.rds")
-#Naive marker
-FeatureDimPlot(Neutrophil , 
-               features = c( 'Camp' , 'Ltf' , 'Lcn2' , 'Retnlg' , 'Mmp9' ))
-
-###Cytotrace
-matrix <- as.matrix(Neutrophil@assays$RNA@counts)
-phenot <- Neutrophil$celltype
-phenot <- as.character(phenot)
-names(phenot) <- rownames(Neutrophil@meta.data)
-emb <- Neutrophil@reductions[["umap"]]@cell.embeddings
-library(CytoTRACE) #加载包
-
-results <- CytoTRACE(matrix, ncores = 8)
-plotCytoGenes(results, numOfGenes = 10)
-
-###可视化
-plotCytoTRACE(results, phenotype = phenot)
-plotCytoTRACE(results, phenotype = phenot, emb = emb, outputDir = './')
-pancreas_sub2 <- pancreas_sub
-
-p <- CellDimPlot(  
-  srt = Neutrophil,  group.by = c("celltype"),   label = T, label_insitu = T ,    label.size = 5 ,
-  reduction = "umap", theme_use = "theme_blank"   )
-p + scale_color_lancet()   
+Neutrophil <- readRDS( './rds/Neutrophil_harmony.rds'  )
 
 ###Slingshot
 

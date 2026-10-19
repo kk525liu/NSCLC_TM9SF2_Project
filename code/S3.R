@@ -1,11 +1,11 @@
 
 
-##########-------S3L-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##########-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-load('./RDS/Li lab/All/Neutrophil_harmony.rds'  )
+Neutrophil <- readRDS( './rds/Neutrophil_harmony.rds'  )
 pancreas_sub <- Neutrophil
 pancreas_sub$celltype
-##SCP的办法
+
 pancreas_sub <- RunDEtest(srt = Neutrophil, group_by = "celltype", fc.threshold = 1, only.pos = FALSE)
 VolcanoPlot(srt = pancreas_sub, group_by = "celltype")
 
@@ -26,7 +26,7 @@ print(ht$plot)
 
 
 
-##----S3P, 针对单个亚群基因富集分析------------------------------------------------------------------------------------------------------
+##----------------------------------------------------------------------------------------------------------
 
 pancreas_sub <- RunGSEA(
   srt = pancreas_sub, group_by = "celltype", db = c("GO_MF" , 'GO_BP', 'GO_CC' ,  'KEGG'  ,'Reactome' )
