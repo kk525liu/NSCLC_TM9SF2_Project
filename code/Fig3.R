@@ -1,9 +1,7 @@
-
-
-
-
 rm(list = ls())
 gc()
+
+if(!dir.exists("./result")) dir.create("./result")
 
 library(Seurat)
 library(qs)
@@ -16,13 +14,19 @@ library(ggsci)
 
 sce <- readRDS( "./rds/sce_harmony.rds"  ) 
 
-FeatureDimPlot( sce , features = c( 'Ptprc' ))
+# Plot 1: Ptprc FeaturePlot
+p1 <- FeatureDimPlot( sce , features = c( 'Ptprc' ))
+ggsave(filename = "./result/FeatureDimPlot_Ptprc.pdf", plot = p1, width = 6, height = 5)
 
-CellDimPlot(    
+# Plot 2: CellDimPlot
+p2 <- CellDimPlot(    
   srt = sce, group.by = c("celltype"),label = T, label_insitu = T , label.size = 3 , 
   reduction = "umap", theme_use = "theme_blank"  )
+ggsave(filename = "./result/CellDimPlot_AllCell.pdf", plot = p2, width = 7, height = 6)
 
-CellStatPlot(srt = sce, stat.by = "celltype",  group.by = "group", label = F  , label.size = 5 )
+# Plot 3: CellStatPlot
+p3 <- CellStatPlot(srt = sce, stat.by = "celltype",  group.by = "group", label = F  , label.size = 5 )
+ggsave(filename = "./result/CellStatPlot_AllCell.pdf", plot = p3, width = 6, height = 5)
 
 #############---------------------------------------------------------------------------------###################
 #### Neutrophil
@@ -44,30 +48,27 @@ Neutrophil$celltype <- factor( Neutrophil$celltype , levels = c(
   "Neutrophil_C1", "Neutrophil_C2","Neutrophil_C3","Neutrophil_C4","Neutrophil_C5",
   "Neutrophil_C6"  )  ) 
 
-
-
-p <- CellDimPlot(  
+# Plot 4: Neutrophil CellDimPlot
+p4 <- CellDimPlot(  
   srt = Neutrophil,  group.by = c("celltype"),   label = T, label_insitu = T ,    label.size = 5 ,
   reduction = "umap", theme_use = "theme_blank"   )
-p + scale_color_lancet()
+p4 <- p4 + scale_color_lancet()
+ggsave(filename = "./result/CellDimPlot_Neutrophil.pdf", plot = p4, width = 7, height = 6)
 
 
-
-p <-CellStatPlot(srt = Neutrophil, stat.by = "celltype",  group.by = "group", label = F  , label.size = 5 )
-p + scale_fill_lancet()
-
+# Plot 5: Neutrophil CellStatPlot
+p5 <- CellStatPlot(srt = Neutrophil, stat.by = "celltype",  group.by = "group", label = F  , label.size = 5 )
+p5 <- p5 + scale_fill_lancet()
+ggsave(filename = "./result/CellStatPlot_Neutrophil.pdf", plot = p5, width = 6, height = 5)
 
 ### Il15ra umap
-FeatureDimPlot( Neutrophil , features = c( 'Il15ra' ))
-
-
+# Plot 6: Il15ra FeaturePlot
+p6 <- FeatureDimPlot( Neutrophil , features = c( 'Il15ra' ))
+ggsave(filename = "./result/FeatureDimPlot_Il15ra.pdf", plot = p6, width = 6, height = 5)
 
 
 ###############################################################################################
 #### All cell Marker    
-
-
-
 
 sce.markers <- readRDS(   './rds/sce_harmony_marker.rds'   )
 library(dplyr)
@@ -75,16 +76,18 @@ top5 <- sce.markers %>% group_by(cluster) %>% top_n(n = 5, wt = avg_log2FC)
 
 library(jjAnno)
 library(scRNAtoolVis)
-unique( sce$celltype )
-p <-jjDotPlot(object = sce,   id = 'celltype',
-              gene = unique(top5$gene),  dot.col = c('#C7E9C0'  , '#F7F7F7', '#8C2D04'   ) , 
-              point.geom = F,  tile.geom = T ,   ytree =  F ,
-              cluster.order =c( 
-                'NK', 'B cell','Proliferate T', 'cDC2', 'cDC1','Cd4T',
-                'Monocyte' , 'Cd8T', 'Macro', 'Neutrophil' ) , 
-              legend.position =  'top' , textSize = 12, 
-              rescale = T  ,   rescale.min = -2, rescale.max = 2,  midpoint = 0 )
-p + theme(text = element_text(size = 12 ))+ theme(axis.text = element_text(size = 12 ))  
+
+# Plot 7: All cell Marker DotPlot
+p7 <- jjDotPlot(object = sce,   id = 'celltype',
+                gene = unique(top5$gene),  dot.col = c('#C7E9C0'  , '#F7F7F7', '#8C2D04'   ) , 
+                point.geom = F,  tile.geom = T ,   ytree =  F ,
+                cluster.order =c( 
+                  'NK', 'B cell','Proliferate T', 'cDC2', 'cDC1','Cd4T',
+                  'Monocyte' , 'Cd8T', 'Macro', 'Neutrophil' ) , 
+                legend.position =  'top' , textSize = 12, 
+                rescale = T  ,   rescale.min = -2, rescale.max = 2,  midpoint = 0 )
+p7 <- p7 + theme(text = element_text(size = 12 ))+ theme(axis.text = element_text(size = 12 ))  
+ggsave(filename = "./result/DotPlot_AllCell_Markers.pdf", plot = p7, width = 10, height = 6)
 
 
 ### Neutrophil Cluster Marker 
@@ -96,19 +99,17 @@ top50 <- Neutrophil.markers %>% group_by(cluster) %>% top_n(n = 50, wt = avg_log
 
 library(jjAnno)
 library(scRNAtoolVis)
-unique( Neutrophil$celltype ) 
 
-p <-jjDotPlot(object = Neutrophil,   id = 'celltype',
-              gene = unique(top5$gene),  dot.col = c( '#9ECAE1' , '#F0F0F0' ,  '#CB181D' ) , 
-              point.geom = F,  tile.geom = T ,   ytree =  F ,
-              cluster.order =c( 'Neutrophil_C6' , 'Neutrophil_C5', 'Neutrophil_C4',
-                                'Neutrophil_C3' ,'Neutrophil_C2', 'Neutrophil_C1', 'Neutrophil_C0'   
-              ) ,  legend.position =  'top' , textSize = 12, 
-              rescale = T  ,   rescale.min = -2, rescale.max = 2,  midpoint = 0 )
-p + theme(text = element_text(size = 12 ))+ theme(axis.text = element_text(size = 12 ))
-
-
-
+# Plot 8: Neutrophil Marker DotPlot
+p8 <- jjDotPlot(object = Neutrophil,   id = 'celltype',
+                gene = unique(top5$gene),  dot.col = c( '#9ECAE1' , '#F0F0F0' ,  '#CB181D' ) , 
+                point.geom = F,  tile.geom = T ,   ytree =  F ,
+                cluster.order =c( 'Neutrophil_C6' , 'Neutrophil_C5', 'Neutrophil_C4',
+                                  'Neutrophil_C3' ,'Neutrophil_C2', 'Neutrophil_C1', 'Neutrophil_C0'   
+                ) ,  legend.position =  'top' , textSize = 12, 
+                rescale = T  ,   rescale.min = -2, rescale.max = 2,  midpoint = 0 )
+p8 <- p8 + theme(text = element_text(size = 12 ))+ theme(axis.text = element_text(size = 12 ))
+ggsave(filename = "./result/DotPlot_Neutrophil_Markers.pdf", plot = p8, width = 8, height = 6)
 
 
 ########################################################################################################################################################
@@ -128,24 +129,22 @@ eego <- enrichGO(gene          = mygene,
                  readable      = TRUE)
 
 df <- data.frame(eego) %>%
- 
   slice_head(n = 10) %>%
   arrange(desc(pvalue))
 
 ratio <- lapply(df$GeneRatio,  function(x){as.numeric(eval(parse(text = x)))}) %>% unlist()
 df$ratio <- ratio
 df$Description <- factor(  df$Description,  levels = df$Description  )
-
 df$ONTOLOGY  <- 'GO:CC'
-## Plot 
-ggplot(df) +
+
+## Plot 9: GO Enrichment
+p9 <- ggplot(df) +
   ggforce::geom_link(aes(x = 0,y = Description,
                          xend = -log10(pvalue),yend = Description,
                          alpha = stat(index),
                          color = ONTOLOGY,
                          size = after_stat(index)),
                      n = 500,
-                     
                      show.legend = F) +
   geom_point(aes(x = -log10(pvalue),y = Description),
              color = "black",
@@ -162,11 +161,10 @@ ggplot(df) +
         axis.text = element_text(color = "black")) +
   ylab("") + xlab("-log10 Pvalue") +
   facet_wrap(~ONTOLOGY,scales = "free",ncol = 1) 
+ggsave(filename = "./result/Enrichment_GO_CC.pdf", plot = p9, width = 8, height = 6)
 
 
 ############  KEGG  ###############################
-
-
 gene.df <- bitr(mygene , fromType="SYMBOL",  toType=c("ENTREZID","ENSEMBL"),  ##基因名转换
                 OrgDb = org.Mm.eg.db)
 
@@ -183,15 +181,14 @@ df$ratio <- ratio
 df$Description <- factor(df$Description,levels = df$Description)
 df$ONTOLOGY <- 'KEGG'
 
-
-ggplot(df) +
+# Plot 10: KEGG Enrichment
+p10 <- ggplot(df) +
   ggforce::geom_link(aes(x = 0,y = Description,
                          xend = -log10(pvalue),yend = Description,
                          alpha = stat(index),
                          color = ONTOLOGY,
                          size = after_stat(index)),
                      n = 500,
-                     # color = "#FF0033",
                      show.legend = F) +
   geom_point(aes(x = -log10(pvalue),y = Description),
              color = "black",
@@ -208,12 +205,10 @@ ggplot(df) +
         axis.text = element_text(color = "black")) +
   ylab("") + xlab("-log10 Pvalue") +
   facet_wrap(~ONTOLOGY,scales = "free",ncol = 1) 
-
+ggsave(filename = "./result/Enrichment_KEGG.pdf", plot = p10, width = 8, height = 6)
 
 
 ############  ReactomePA  ###############################
-
-
 library(ReactomePA)
 library(clusterProfiler)
 library(stringr)
@@ -243,18 +238,16 @@ df$ratio <- ratio
 df$Description <- factor(df$Description,levels = df$Description)
 df$ONTOLOGY <- 'Reactome'
 
-## 横坐标为  ， 纵坐标是富集到的信号通路   
-## 
-ggplot(df) +
+# Plot 11: Reactome Enrichment
+p11 <- ggplot(df) +
   ggforce::geom_link(aes(x = 0,  y = Description,
                          xend = -log10(pvalue),yend = Description,
                          alpha = stat(index),
                          color = ONTOLOGY,
                          size = after_stat(index)),
                      n = 500,
-                     # color = "#FF0033",
                      show.legend = F) +
-  geom_point(aes(x = -log10(pvalue),y                                                                                                    = Description),
+  geom_point(aes(x = -log10(pvalue),y = Description),
              color = "black",
              fill = "white",size = 6,shape = 21) +
   geom_line(aes(x = ratio*100,  y = Description, group = 1 ),
@@ -269,8 +262,7 @@ ggplot(df) +
         axis.text = element_text(color = "black")) +
   ylab("") + xlab("-log10 Pvalue") +
   facet_wrap(~ONTOLOGY,scales = "free",ncol = 1) 
-
-
+ggsave(filename = "./result/Enrichment_Reactome.pdf", plot = p11, width = 8, height = 6)
 
 
 ############################################################################################################
@@ -280,7 +272,6 @@ ggplot(df) +
 cellchat_NC <- readRDS( './rds/cellchat_NC.rds'  )
 cellchat_NC <- netAnalysis_computeCentrality(cellchat_NC, slot.name = "netP")  
 
-
 cellchat_sg <- readRDS( './rds/cellchat_sg.rds'  )
 cellchat_sg <- netAnalysis_computeCentrality(cellchat_sg, slot.name = "netP") 
 
@@ -289,10 +280,9 @@ levels(cellchat_NC@idents)
 object.list <- list(   NC = cellchat_NC , sgTm9sf2 = cellchat_sg )
 cellchat <- mergeCellChat(object.list, add.names = names(object.list))
 
-
-
 #####--------------------------Plot------------------------------------------------------------------------------------------------------------
-
+# Plot 12: CellChat Circle Plot (需要用 pdf() 手动保存，因为是基础绘图函数生成)
+pdf("./result/CellChat_Interaction_Circle.pdf", width = 12, height = 6)
 weight.max <- getMaxWeight(object.list, attribute = c("idents","count"))
 par(mfrow = c(1,2), xpd=TRUE)
 
@@ -302,25 +292,10 @@ for (i in 1:length(object.list) ) {
                                    "CD8T_C4_Exhausted", "CD8T_C6_Exhausted" ,"CD8T_C7_ISG" ),  sources.use =  c(   "Neutrophil_C4" ) , 
                    edge.weight.max = weight.max[2], edge.width.max = 12, title.name = paste0("Number of interactions - ", names(object.list)[i]))
 }
-
-
-
-
+dev.off()
 
 ########---------------------------------paired Signal----------------------------------##################################################################################################################################
-levels(cellchat_NC@idents)
-
-netVisual_bubble(cellchat, sources.use = c(9 ), 
-                 targets.use = c(1:8),  comparison = c(1, 2), angle.x = 45)
-
-
-
-
-
-
-
-
-
-
-
-
+# Plot 13: CellChat Bubble Plot
+p13 <- netVisual_bubble(cellchat, sources.use = c(9 ), 
+                        targets.use = c(1:8),  comparison = c(1, 2), angle.x = 45)
+ggsave(filename = "./result/CellChat_Interaction_Bubble.pdf", plot = p13, width = 10, height = 8)
